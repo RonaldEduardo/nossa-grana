@@ -76,18 +76,10 @@ function submit() {
     <h1>{{ isEditing ? 'Editar lancamento' : 'Novo lancamento' }}</h1>
     <p v-if="id && !existing" class="error">Lancamento nao encontrado.</p>
     <form v-else @submit.prevent="submit">
-      <label>Tipo<select v-model="form.type"><option v-for="type in transactionTypes" :key="type" :value="type">{{ type }}</option></select></label>
-      <label>Descricao<input v-model="form.description" required /></label>
-      <label>Valor total<input v-model.number="form.amount" type="number" min="0.01" step="0.01" inputmode="decimal" required /></label>
-      <label>Data<input v-model="form.date" type="date" required /></label>
-      <label>Responsavel<select v-model="form.responsible"><option v-for="responsible in responsibles" :key="responsible" :value="responsible">{{ responsible }}</option></select></label>
-      <label>Forma de pagamento<select v-model="form.paymentMethod"><option v-for="method in paymentMethods" :key="method" :value="method">{{ method }}</option></select></label>
-      <label v-if="isCredit && !isEditing">Numero de parcelas<input v-model.number="form.installmentCount" type="number" min="1" step="1" required /></label>
-      <label>Categoria<select v-model="form.categoryId" required><option value="" disabled>Selecione</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select></label>
-      <label>Subcategoria<select v-model="form.subcategoryId"><option value="">Nenhuma</option><option v-for="subcategory in selectedCategory?.subcategories ?? []" :key="subcategory.id" :value="subcategory.id">{{ subcategory.name }}</option></select></label>
-      <label>Comportamento<select v-model="form.behavior" required><option value="" disabled>Selecione</option><option v-for="behavior in behaviors" :key="behavior" :value="behavior">{{ behavior }}</option></select></label>
-      <label>Necessidade<select v-model="form.necessity" required><option value="" disabled>Selecione</option><option v-for="necessity in necessities" :key="necessity" :value="necessity">{{ necessity }}</option></select></label>
-      <label>Observacao<textarea v-model="form.notes" rows="3" /></label>
+      <fieldset><legend>Basico</legend><label>Tipo<select v-model="form.type"><option v-for="type in transactionTypes" :key="type" :value="type">{{ type }}</option></select></label><label>Descricao<input v-model="form.description" required /></label><label>Valor total<input v-model.number="form.amount" type="number" min="0.01" step="0.01" inputmode="decimal" required /></label><label>Data<input v-model="form.date" type="date" required /></label></fieldset>
+      <fieldset><legend>Financeiro</legend><label>Responsavel<select v-model="form.responsible"><option v-for="responsible in responsibles" :key="responsible" :value="responsible">{{ responsible }}</option></select></label><label>Forma de pagamento<select v-model="form.paymentMethod"><option v-for="method in paymentMethods" :key="method" :value="method">{{ method }}</option></select></label><label v-if="isCredit && !isEditing">Numero de parcelas<input v-model.number="form.installmentCount" type="number" min="1" step="1" required /></label><label>Categoria<select v-model="form.categoryId" required><option value="" disabled>Selecione</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select></label><label>Subcategoria<select v-model="form.subcategoryId"><option value="">Nenhuma</option><option v-for="subcategory in selectedCategory?.subcategories ?? []" :key="subcategory.id" :value="subcategory.id">{{ subcategory.name }}</option></select></label></fieldset>
+      <fieldset><legend>Classificacao</legend><label>Comportamento<select v-model="form.behavior" required><option value="" disabled>Selecione</option><option v-for="behavior in behaviors" :key="behavior" :value="behavior">{{ behavior }}</option></select></label><label>Necessidade<select v-model="form.necessity" required><option value="" disabled>Selecione</option><option v-for="necessity in necessities" :key="necessity" :value="necessity">{{ necessity }}</option></select></label></fieldset>
+      <fieldset><legend>Observacao</legend><label>Detalhes adicionais<textarea v-model="form.notes" rows="3" /></label></fieldset>
       <p v-if="error" class="error">{{ error }}</p>
       <div class="form-actions"><RouterLink to="/">Cancelar</RouterLink><button class="primary" type="submit">Salvar</button></div>
     </form>

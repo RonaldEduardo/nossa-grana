@@ -29,18 +29,10 @@ function edit(recurrence: Recurrence) { Object.assign(form, { ...recurrence, def
   <section class="form-page">
     <h1>{{ editingId ? 'Editar recorrencia' : 'Nova recorrencia' }}</h1>
     <form @submit.prevent="submit">
-      <label>Descricao<input v-model="form.description" /></label>
-      <label>Tipo<select v-model="form.type"><option v-for="item in transactionTypes" :key="item" :value="item">{{ item }}</option></select></label>
-      <label>Categoria<select v-model="form.categoryId"><option value="" disabled>Selecione</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select></label>
-      <label>Subcategoria<select v-model="form.subcategoryId"><option value="">Nenhuma</option><option v-for="item in selectedCategory?.subcategories ?? []" :key="item.id" :value="item.id">{{ item.name }}</option></select></label>
-      <label>Responsavel<select v-model="form.responsible"><option v-for="item in responsibles" :key="item" :value="item">{{ item }}</option></select></label>
-      <label>Forma de pagamento<select v-model="form.paymentMethod"><option v-for="item in paymentMethods" :key="item" :value="item">{{ item }}</option></select></label>
-      <label>Comportamento<select v-model="form.behavior"><option value="" disabled>Selecione</option><option v-for="item in behaviors" :key="item" :value="item">{{ item }}</option></select></label>
-      <label>Necessidade<select v-model="form.necessity"><option value="" disabled>Selecione</option><option v-for="item in necessities" :key="item" :value="item">{{ item }}</option></select></label>
-      <label>Dia de vencimento<input v-model.number="form.dueDay" type="number" min="1" max="28" /></label>
-      <label>Tipo de valor<select v-model="form.recurrenceValueType"><option v-for="item in recurrenceValueTypes" :key="item" :value="item">{{ item }}</option></select></label>
-       <label v-if="form.recurrenceValueType === 'FIXED'">Valor padrao<input v-model.number="form.defaultAmount" type="number" min="0.01" step="0.01" inputmode="decimal" /></label>
-      <label>Mes inicial<input v-model="form.startMonth" type="month" /></label>
+      <fieldset><legend>Identidade</legend><label>Descricao<input v-model="form.description" /></label><label>Tipo<select v-model="form.type"><option v-for="item in transactionTypes" :key="item" :value="item">{{ item }}</option></select></label></fieldset>
+      <fieldset><legend>Classificacao</legend><label>Categoria<select v-model="form.categoryId"><option value="" disabled>Selecione</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select></label><label>Subcategoria<select v-model="form.subcategoryId"><option value="">Nenhuma</option><option v-for="item in selectedCategory?.subcategories ?? []" :key="item.id" :value="item.id">{{ item.name }}</option></select></label><label>Comportamento<select v-model="form.behavior"><option value="" disabled>Selecione</option><option v-for="item in behaviors" :key="item" :value="item">{{ item }}</option></select></label><label>Necessidade<select v-model="form.necessity"><option value="" disabled>Selecione</option><option v-for="item in necessities" :key="item" :value="item">{{ item }}</option></select></label></fieldset>
+      <fieldset><legend>Pagamento</legend><label>Responsavel<select v-model="form.responsible"><option v-for="item in responsibles" :key="item" :value="item">{{ item }}</option></select></label><label>Forma de pagamento<select v-model="form.paymentMethod"><option v-for="item in paymentMethods" :key="item" :value="item">{{ item }}</option></select></label><label>Dia de vencimento<input v-model.number="form.dueDay" type="number" min="1" max="28" /></label></fieldset>
+      <fieldset><legend>Valor</legend><label>Tipo de valor<select v-model="form.recurrenceValueType"><option v-for="item in recurrenceValueTypes" :key="item" :value="item">{{ item }}</option></select></label><label v-if="form.recurrenceValueType === 'FIXED'">Valor padrao<input v-model.number="form.defaultAmount" type="number" min="0.01" step="0.01" inputmode="decimal" /></label><label>Mes inicial<input v-model="form.startMonth" type="month" /></label></fieldset>
       <label class="checkbox"><input v-model="form.active" type="checkbox" /> Ativa</label>
       <p v-if="error" class="error">{{ error }}</p>
       <div class="form-actions"><button v-if="editingId" type="button" @click="reset">Cancelar</button><button class="primary" type="submit">Salvar</button></div>

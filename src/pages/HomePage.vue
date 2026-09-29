@@ -35,6 +35,7 @@ const summary = computed(() => {
 
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const formatCurrency = (amountCents: number) => currency.format(amountCents / 100)
+const monthLabel = computed(() => new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date(`${selectedMonth.value}-01T12:00:00`)))
 const responsibleSummary = computed(() => responsibles.map((responsible) => ({
   responsible,
   balance: monthTransactions.value.filter((transaction) => transaction.responsible === responsible).reduce((total, transaction) => total + (transaction.type === 'ENTRADA' ? transaction.amountCents : -transaction.amountCents), 0),
@@ -89,13 +90,18 @@ function remove(id: string) {
 </script>
 
 <template>
-  <section class="month-controls">
-    <button type="button" @click="changeMonth(-1)">Mes anterior</button>
+  <section class="month-controls" aria-label="Competencia selecionada">
+    <button type="button" aria-label="Mes anterior" @click="changeMonth(-1)">&larr;</button>
     <div>
-      <strong>{{ selectedMonth }}</strong>
+      <strong>{{ monthLabel }}</strong>
       <button type="button" class="link-button" @click="goToCurrentMonth">Mes atual</button>
     </div>
-    <button type="button" @click="changeMonth(1)">Proximo mes</button>
+    <button type="button" aria-label="Proximo mes" @click="changeMonth(1)">&rarr;</button>
+  </section>
+
+  <section class="balance-card" :class="{ negative: summary.balance < 0 }" aria-label="Saldo previsto">
+    <span>Saldo previsto</span>
+    <strong>{{ formatCurrency(summary.balance) }}</strong>
   </section>
 
   <section class="summary" aria-label="Resumo mensal">
@@ -103,28 +109,30 @@ function remove(id: string) {
     <div><span>Saidas</span><strong>{{ formatCurrency(summary.exits) }}</strong></div>
     <div><span>Pago (saidas)</span><strong>{{ formatCurrency(summary.paid) }}</strong></div>
     <div><span>Pendente (saidas)</span><strong>{{ formatCurrency(summary.pending) }}</strong></div>
-    <div><span>Saldo previsto</span><strong>{{ formatCurrency(summary.balance) }}</strong></div>
   </section>
-  <section class="summary responsible-summary" aria-label="Resumo por responsavel"><div v-for="item in responsibleSummary" :key="item.responsible"><span>{{ item.responsible }}</span><strong>{{ formatCurrency(item.balance) }}</strong></div></section>
 
   <section class="transactions-section">
-    <h1>Lancamentos</h1>
+    <div class="section-heading"><div><p class="eyebrow">Visao do mes</p><h1>Lancamentos</h1></div><RouterLink to="/transactions/new" class="button primary compact-action">Novo</RouterLink></div>
     <p v-if="monthTransactions.length === 0" class="empty">Nenhum lancamento nesta competencia.</p>
     <div v-else class="transaction-list">
       <article v-for="transaction in monthTransactions" :key="transaction.id" class="transaction-card">
         <div>
           <strong>{{ transaction.description }}<template v-if="transaction.installmentNumber"> {{ transaction.installmentNumber }}/{{ transaction.installmentCount }}</template></strong>
-          <p>{{ transaction.type }} | {{ formatCurrency(transaction.amountCents) }} | {{ transaction.date }}</p>
-          <p>{{ transaction.responsible }} | {{ transaction.paymentMethod }} | <template v-if="transaction.needsValue">Valor a informar</template><template v-else-if="transaction.status === 'PAGO'">Pago em {{ transaction.paidAt?.slice(0, 10) }}</template><template v-else>Pendente</template></p>
+          <p class="transaction-value">{{ formatCurrency(transaction.amountCents) }} <span>&middot; {{ transaction.date }}</span></p>
+          <p>{{ transaction.responsible }} &middot; {{ transaction.paymentMethod }}</p>
+          <span v-if="transaction.needsValue" class="status-chip warning">Valor a informar</span>
+          <span v-else-if="transaction.status === 'PAGO'" class="status-chip paid">Pago{{ transaction.paidAt ? ` em ${transaction.paidAt.slice(0, 10)}` : '' }}</span>
+          <span v-else class="status-chip pending">Pendente</span>
         </div>
         <div class="actions">
           <RouterLink :to="`/transactions/${transaction.id}/edit`">Editar</RouterLink>
           <button v-if="transaction.needsValue" type="button" @click="editValue(transaction)">Editar valor</button>
-          <button type="button" @click="togglePaid(transaction.id)">{{ transaction.status === 'PAGO' ? 'Desmarcar pago' : 'Marcar como pago' }}</button>
+          <button type="button" :class="{ primary: transaction.status === 'PENDENTE' }" @click="togglePaid(transaction.id)">{{ transaction.status === 'PAGO' ? 'Desmarcar pago' : 'Marcar como pago' }}</button>
           <button type="button" class="danger" @click="remove(transaction.id)">Excluir</button>
         </div>
       </article>
     </div>
   </section>
+  <section class="responsible-section" aria-label="Resumo por responsavel"><div class="section-heading"><div><p class="eyebrow">Distribuicao</p><h2>Por responsavel</h2></div></div><div class="responsible-summary"><div v-for="item in responsibleSummary" :key="item.responsible"><span>{{ item.responsible }}</span><strong>{{ formatCurrency(item.balance) }}</strong></div></div></section>
   <button type="button" class="danger clear-data" @click="clearTestData">Limpar dados de teste</button>
 </template>

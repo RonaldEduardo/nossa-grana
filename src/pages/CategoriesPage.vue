@@ -15,6 +15,7 @@ const categories = ref<Category[]>(getCategories())
 const error = ref('')
 const newCategoryName = ref('')
 const subcategoryNames = ref<Record<string, string>>({})
+const expandedCategoryId = ref<string | null>(null)
 
 function refresh() {
   categories.value = getCategories()
@@ -48,6 +49,10 @@ function addSubcategory(category: Category) {
   subcategoryNames.value[category.id] = ''
 }
 
+function toggleSubcategoryForm(categoryId: string) {
+  expandedCategoryId.value = expandedCategoryId.value === categoryId ? null : categoryId
+}
+
 function editSubcategory(categoryId: string, subcategoryId: string, currentName: string) {
   const name = window.prompt('Nome da subcategoria', currentName)
   if (name?.trim()) run(() => updateSubcategory(categoryId, subcategoryId, name))
@@ -69,7 +74,8 @@ function editSubcategory(categoryId: string, subcategoryId: string, currentName:
         <ul v-if="category.subcategories.length">
           <li v-for="subcategory in category.subcategories" :key="subcategory.id">{{ subcategory.name }} <button type="button" @click="editSubcategory(category.id, subcategory.id, subcategory.name)">Editar</button> <button type="button" class="danger" @click="run(() => deleteSubcategory(category.id, subcategory.id))">Excluir</button></li>
         </ul>
-        <form class="inline-form" @submit.prevent="addSubcategory(category)">
+        <button type="button" class="soft-button" @click="toggleSubcategoryForm(category.id)">{{ expandedCategoryId === category.id ? 'Cancelar' : 'Adicionar subcategoria' }}</button>
+        <form v-if="expandedCategoryId === category.id" class="inline-form" @submit.prevent="addSubcategory(category)">
           <label>Nova subcategoria<input v-model="subcategoryNames[category.id]" /></label>
           <button type="submit">Adicionar</button>
         </form>
