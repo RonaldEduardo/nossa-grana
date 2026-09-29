@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import type { Transaction } from '@/models/transaction'
-import { responsibles } from '@/models/transaction'
-import { ensureRecurrencesForMonth } from '@/services/recurrences'
-import { deleteTransaction, getTransactions, toggleTransactionPaid, updateTransactionAmount } from '@/services/transactions'
+import type { Transaction } from '@/entities/transaction/model/transaction'
+import { responsibles } from '@/entities/transaction/model/transaction'
+import { recurrenceFeatures, transactionFeatures } from '@/app/composition/features'
 
 const currentDate = new Date()
 const selectedMonth = ref(`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`)
-ensureRecurrencesForMonth(selectedMonth.value)
-const transactions = ref<Transaction[]>(getTransactions())
+const transactions = ref<Transaction[]>([])
 
 const monthTransactions = computed(() =>
   transactions.value
@@ -41,51 +39,47 @@ const responsibleSummary = computed(() => responsibles.map((responsible) => ({
   balance: monthTransactions.value.filter((transaction) => transaction.responsible === responsible).reduce((total, transaction) => total + (transaction.type === 'ENTRADA' ? transaction.amountCents : -transaction.amountCents), 0),
 })))
 
-function refreshForMonth() {
-  ensureRecurrencesForMonth(selectedMonth.value)
-  transactions.value = getTransactions()
+async function refreshForMonth() {
+  await recurrenceFeatures.ensureRecurrencesForMonth(selectedMonth.value)
+  transactions.value = await transactionFeatures.getTransactions()
 }
 
-function changeMonth(offset: number) {
+onMounted(refreshForMonth)
+
+async function changeMonth(offset: number) {
   const [year, month] = selectedMonth.value.split('-').map(Number)
   const next = new Date(year, month - 1 + offset, 1)
   selectedMonth.value = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`
-  refreshForMonth()
+  await refreshForMonth()
 }
 
-function goToCurrentMonth() {
+async function goToCurrentMonth() {
   selectedMonth.value = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
-  refreshForMonth()
+  await refreshForMonth()
 }
 
-function editValue(transaction: Transaction) {
+async function editValue(transaction: Transaction) {
   const value = window.prompt('Informe o valor', String(transaction.amountCents / 100))
   if (value === null) return
   const amountCents = Math.round(Number(value.replace(',', '.')) * 100)
   if (!Number.isInteger(amountCents) || amountCents < 0) return
-  updateTransactionAmount(transaction.id, amountCents)
-  transactions.value = getTransactions()
+  await transactionFeatures.updateTransactionAmount(transaction.id, amountCents)
+  transactions.value = await transactionFeatures.getTransactions()
 }
 
-function clearTestData() {
-  if (!window.confirm('Limpar todos os dados de teste?')) return
-  ;['finance.transactions', 'finance.categories', 'finance.recurrences', 'finance.goals', 'finance.goalMovements'].forEach((key) => localStorage.removeItem(key))
-  refreshForMonth()
+async function togglePaid(id: string) {
+  await transactionFeatures.toggleTransactionPaid(id)
+  transactions.value = await transactionFeatures.getTransactions()
 }
 
-function togglePaid(id: string) {
-  toggleTransactionPaid(id)
-  transactions.value = getTransactions()
-}
-
-function remove(id: string) {
+async function remove(id: string) {
   const transaction = transactions.value.find((item) => item.id === id)
   const deleteGroup = transaction?.installmentGroupId
     ? window.confirm('Excluir todas as parcelas desta compra? Clique em Cancelar para excluir somente esta parcela.')
     : false
   if (!transaction || (!transaction.installmentGroupId && !window.confirm('Excluir este lancamento?'))) return
-  deleteTransaction(id, deleteGroup)
-  transactions.value = getTransactions()
+  await transactionFeatures.deleteTransaction(id, deleteGroup)
+  transactions.value = await transactionFeatures.getTransactions()
 }
 </script>
 
@@ -128,11 +122,10 @@ function remove(id: string) {
           <RouterLink :to="`/transactions/${transaction.id}/edit`">Editar</RouterLink>
           <button v-if="transaction.needsValue" type="button" @click="editValue(transaction)">Editar valor</button>
           <button type="button" :class="{ primary: transaction.status === 'PENDENTE' }" @click="togglePaid(transaction.id)">{{ transaction.status === 'PAGO' ? 'Desmarcar pago' : 'Marcar como pago' }}</button>
-          <button type="button" class="danger" @click="remove(transaction.id)">Excluir</button>
+          <button v-if="!transaction.goalMovementId" type="button" class="danger" @click="remove(transaction.id)">Excluir</button>
         </div>
       </article>
     </div>
   </section>
   <section class="responsible-section" aria-label="Resumo por responsavel"><div class="section-heading"><div><p class="eyebrow">Distribuicao</p><h2>Por responsavel</h2></div></div><div class="responsible-summary"><div v-for="item in responsibleSummary" :key="item.responsible"><span>{{ item.responsible }}</span><strong>{{ formatCurrency(item.balance) }}</strong></div></div></section>
-  <button type="button" class="danger clear-data" @click="clearTestData">Limpar dados de teste</button>
 </template>

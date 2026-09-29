@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '@/pages/HomePage.vue'
-import TransactionFormPage from '@/pages/TransactionFormPage.vue'
-import CategoriesPage from '@/pages/CategoriesPage.vue'
-import RecurrencesPage from '@/pages/RecurrencesPage.vue'
-import GoalsPage from '@/pages/GoalsPage.vue'
+import HomePage from '@/pages/home/HomePage.vue'
+import TransactionFormPage from '@/pages/transactions/TransactionFormPage.vue'
+import CategoriesPage from '@/pages/categories/CategoriesPage.vue'
+import RecurrencesPage from '@/pages/recurrences/RecurrencesPage.vue'
+import GoalsPage from '@/pages/goals/GoalsPage.vue'
 
 export default createRouter({
   history: createWebHistory(),

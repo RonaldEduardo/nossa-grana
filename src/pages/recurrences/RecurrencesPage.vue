@@ -1,28 +1,30 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
-import { behaviors, necessities, paymentMethods, responsibles, transactionTypes, type Behavior, type Necessity } from '@/models/transaction'
-import { recurrenceValueTypes, type Recurrence, type RecurrenceInput } from '@/models/recurrence'
-import { getCategories } from '@/services/categories'
-import { createRecurrence, deleteRecurrence, getRecurrences, toggleRecurrence, updateRecurrence } from '@/services/recurrences'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { behaviors, necessities, paymentMethods, responsibles, transactionTypes, type Behavior, type Necessity } from '@/entities/transaction/model/transaction'
+import { recurrenceValueTypes, type Recurrence, type RecurrenceInput } from '@/entities/recurrence/model/recurrence'
+import { categoryFeatures, recurrenceFeatures } from '@/app/composition/features'
 
-const categories = getCategories()
-const recurrences = ref(getRecurrences())
+const categories = ref<Awaited<ReturnType<typeof categoryFeatures.getCategories>>>([])
+const recurrences = ref<Awaited<ReturnType<typeof recurrenceFeatures.getRecurrences>>>([])
 const error = ref('')
 const editingId = ref<string | null>(null)
 const currentMonth = new Date().toISOString().slice(0, 7)
 const form = reactive({ description: '', type: 'SAIDA', categoryId: '', subcategoryId: '', responsible: 'CASA', paymentMethod: 'PIX', behavior: '', necessity: '', dueDay: 1, recurrenceValueType: 'FIXED', defaultAmount: 0, active: true, startMonth: currentMonth })
-const selectedCategory = computed(() => categories.find((category) => category.id === form.categoryId))
+const selectedCategory = computed(() => categories.value.find((category) => category.id === form.categoryId))
 
-function refresh() { recurrences.value = getRecurrences() }
+async function refresh() { recurrences.value = await recurrenceFeatures.getRecurrences() }
+onMounted(async () => { categories.value = await categoryFeatures.getCategories(); await refresh() })
 function reset() { Object.assign(form, { description: '', type: 'SAIDA', categoryId: '', subcategoryId: '', responsible: 'CASA', paymentMethod: 'PIX', behavior: '', necessity: '', dueDay: 1, recurrenceValueType: 'FIXED', defaultAmount: 0, active: true, startMonth: currentMonth }); editingId.value = null }
-function submit() {
+async function submit() {
   error.value = ''
   if (!form.description.trim() || !form.categoryId || !form.behavior || !form.necessity || !form.startMonth || (form.recurrenceValueType === 'FIXED' && form.defaultAmount <= 0)) { error.value = 'Preencha descricao, classificacao, mes inicial e valor da recorrencia fixa.'; return }
   const input: RecurrenceInput = { description: form.description.trim(), type: form.type as RecurrenceInput['type'], categoryId: form.categoryId, subcategoryId: form.subcategoryId || null, responsible: form.responsible as RecurrenceInput['responsible'], paymentMethod: form.paymentMethod as RecurrenceInput['paymentMethod'], behavior: form.behavior as Behavior, necessity: form.necessity as Necessity, dueDay: form.dueDay || null, recurrenceValueType: form.recurrenceValueType as RecurrenceInput['recurrenceValueType'], defaultAmountCents: Math.round(form.defaultAmount * 100), active: form.active, startMonth: form.startMonth }
-  if (editingId.value) updateRecurrence(editingId.value, input); else createRecurrence(input)
-  refresh(); reset()
+  if (editingId.value) await recurrenceFeatures.updateRecurrence(editingId.value, input); else await recurrenceFeatures.createRecurrence(input)
+  await refresh(); reset()
 }
 function edit(recurrence: Recurrence) { Object.assign(form, { ...recurrence, defaultAmount: recurrence.defaultAmountCents / 100 }); editingId.value = recurrence.id }
+async function toggle(id: string) { await recurrenceFeatures.toggleRecurrence(id); await refresh() }
+async function remove(id: string) { await recurrenceFeatures.deleteRecurrence(id); await refresh() }
 </script>
 
 <template>
@@ -38,5 +40,5 @@ function edit(recurrence: Recurrence) { Object.assign(form, { ...recurrence, def
       <div class="form-actions"><button v-if="editingId" type="button" @click="reset">Cancelar</button><button class="primary" type="submit">Salvar</button></div>
     </form>
   </section>
-  <section class="list-page"><h2>Recorrencias cadastradas</h2><p v-if="!recurrences.length" class="empty">Nenhuma recorrencia cadastrada.</p><article v-for="recurrence in recurrences" :key="recurrence.id" class="transaction-card"><div><strong>{{ recurrence.description }}</strong><p>{{ recurrence.recurrenceValueType }} | {{ recurrence.active ? 'Ativa' : 'Inativa' }} | desde {{ recurrence.startMonth }}</p></div><div class="actions"><button type="button" @click="edit(recurrence)">Editar</button><button type="button" @click="toggleRecurrence(recurrence.id); refresh()">{{ recurrence.active ? 'Desativar' : 'Ativar' }}</button><button type="button" class="danger" @click="deleteRecurrence(recurrence.id); refresh()">Excluir</button></div></article></section>
+  <section class="list-page"><h2>Recorrencias cadastradas</h2><p v-if="!recurrences.length" class="empty">Nenhuma recorrencia cadastrada.</p><article v-for="recurrence in recurrences" :key="recurrence.id" class="transaction-card"><div><strong>{{ recurrence.description }}</strong><p>{{ recurrence.recurrenceValueType }} | {{ recurrence.active ? 'Ativa' : 'Inativa' }} | desde {{ recurrence.startMonth }}</p></div><div class="actions"><button type="button" @click="edit(recurrence)">Editar</button><button type="button" @click="toggle(recurrence.id)">{{ recurrence.active ? 'Desativar' : 'Ativar' }}</button><button type="button" class="danger" @click="remove(recurrence.id)">Excluir</button></div></article></section>
 </template>
