@@ -78,7 +78,7 @@ function submit() {
     <form v-else @submit.prevent="submit">
       <label>Tipo<select v-model="form.type"><option v-for="type in transactionTypes" :key="type" :value="type">{{ type }}</option></select></label>
       <label>Descricao<input v-model="form.description" required /></label>
-      <label>Valor total<input v-model.number="form.amount" type="number" min="0.01" step="0.01" required /></label>
+      <label>Valor total<input v-model.number="form.amount" type="number" min="0.01" step="0.01" inputmode="decimal" required /></label>
       <label>Data<input v-model="form.date" type="date" required /></label>
       <label>Responsavel<select v-model="form.responsible"><option v-for="responsible in responsibles" :key="responsible" :value="responsible">{{ responsible }}</option></select></label>
       <label>Forma de pagamento<select v-model="form.paymentMethod"><option v-for="method in paymentMethods" :key="method" :value="method">{{ method }}</option></select></label>

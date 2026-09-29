@@ -39,7 +39,7 @@ function edit(recurrence: Recurrence) { Object.assign(form, { ...recurrence, def
       <label>Necessidade<select v-model="form.necessity"><option value="" disabled>Selecione</option><option v-for="item in necessities" :key="item" :value="item">{{ item }}</option></select></label>
       <label>Dia de vencimento<input v-model.number="form.dueDay" type="number" min="1" max="28" /></label>
       <label>Tipo de valor<select v-model="form.recurrenceValueType"><option v-for="item in recurrenceValueTypes" :key="item" :value="item">{{ item }}</option></select></label>
-      <label v-if="form.recurrenceValueType === 'FIXED'">Valor padrao<input v-model.number="form.defaultAmount" type="number" min="0.01" step="0.01" /></label>
+       <label v-if="form.recurrenceValueType === 'FIXED'">Valor padrao<input v-model.number="form.defaultAmount" type="number" min="0.01" step="0.01" inputmode="decimal" /></label>
       <label>Mes inicial<input v-model="form.startMonth" type="month" /></label>
       <label class="checkbox"><input v-model="form.active" type="checkbox" /> Ativa</label>
       <p v-if="error" class="error">{{ error }}</p>
