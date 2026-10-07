@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
 import type { Transaction } from '@/entities/transaction/model/transaction'
 import { responsibles } from '@/entities/transaction/model/transaction'
-import { recurrenceFeatures, transactionFeatures } from '@/app/composition/features'
+import { recurrenceFeatures, transactionFeatures } from '@/composition/features'
 
 const currentDate = new Date()
 const selectedMonth = ref(`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`)
@@ -106,7 +105,7 @@ async function remove(id: string) {
   </section>
 
   <section class="transactions-section">
-    <div class="section-heading"><div><p class="eyebrow">Visao do mes</p><h1>Lancamentos</h1></div><RouterLink to="/transactions/new" class="button primary compact-action">Novo</RouterLink></div>
+    <div class="section-heading"><div><p class="eyebrow">Visao do mes</p><h1>Lancamentos</h1></div><NuxtLink to="/transactions/new" class="button primary compact-action">Novo</NuxtLink></div>
     <p v-if="monthTransactions.length === 0" class="empty">Nenhum lancamento nesta competencia.</p>
     <div v-else class="transaction-list">
       <article v-for="transaction in monthTransactions" :key="transaction.id" class="transaction-card">
@@ -119,7 +118,7 @@ async function remove(id: string) {
           <span v-else class="status-chip pending">Pendente</span>
         </div>
         <div class="actions">
-          <RouterLink :to="`/transactions/${transaction.id}/edit`">Editar</RouterLink>
+          <NuxtLink :to="`/transactions/${transaction.id}/edit`">Editar</NuxtLink>
           <button v-if="transaction.needsValue" type="button" @click="editValue(transaction)">Editar valor</button>
           <button type="button" :class="{ primary: transaction.status === 'PENDENTE' }" @click="togglePaid(transaction.id)">{{ transaction.status === 'PAGO' ? 'Desmarcar pago' : 'Marcar como pago' }}</button>
           <button v-if="!transaction.goalMovementId" type="button" class="danger" @click="remove(transaction.id)">Excluir</button>

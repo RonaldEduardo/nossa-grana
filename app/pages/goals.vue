@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { goalMovementTypes, type Goal, type GoalMovement } from '@/entities/goal/model/goal'
-import { goalFeatures } from '@/app/composition/features'
+import { goalFeatures } from '@/composition/features'
 
 const goals = ref<Awaited<ReturnType<typeof goalFeatures.getGoals>>>([])
 const summaries = ref<Record<string, { balanceCents: number; suggestionCents: number | null }>>({})

@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { behaviors, necessities, paymentMethods, responsibles, transactionTypes, type Behavior, type Necessity } from '@/entities/transaction/model/transaction'
 import { recurrenceValueTypes, type Recurrence, type RecurrenceInput } from '@/entities/recurrence/model/recurrence'
-import { categoryFeatures, recurrenceFeatures } from '@/app/composition/features'
+import { categoryFeatures, recurrenceFeatures } from '@/composition/features'
 
 const categories = ref<Awaited<ReturnType<typeof categoryFeatures.getCategories>>>([])
 const recurrences = ref<Awaited<ReturnType<typeof recurrenceFeatures.getRecurrences>>>([])

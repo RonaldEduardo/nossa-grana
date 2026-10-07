@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { Category } from '@/entities/category/model/category'
-import { categoryFeatures } from '@/app/composition/features'
+import { categoryFeatures } from '@/composition/features'
 
 const categories = ref<Category[]>([])
 const error = ref('')
@@ -36,6 +36,10 @@ async function editCategory(category: Category) {
   if (name?.trim()) await run(() => categoryFeatures.updateCategory(category.id, name))
 }
 
+async function deleteCategory(category: Category) {
+  await run(() => categoryFeatures.deleteCategory(category.id))
+}
+
 async function addSubcategory(category: Category) {
   const name = subcategoryNames.value[category.id]?.trim()
   if (!name) return
@@ -51,6 +55,10 @@ async function editSubcategory(categoryId: string, subcategoryId: string, curren
   const name = window.prompt('Nome da subcategoria', currentName)
   if (name?.trim()) await run(() => categoryFeatures.updateSubcategory(categoryId, subcategoryId, name))
 }
+
+async function deleteSubcategory(categoryId: string, subcategoryId: string) {
+  await run(() => categoryFeatures.deleteSubcategory(categoryId, subcategoryId))
+}
 </script>
 
 <template>
@@ -64,9 +72,9 @@ async function editSubcategory(categoryId: string, subcategoryId: string, curren
 
     <div class="category-list">
       <article v-for="category in categories" :key="category.id" class="category-card">
-        <div class="category-heading"><strong>{{ category.name }}</strong><span><button type="button" @click="editCategory(category)">Editar</button><button type="button" class="danger" @click="run(() => categoryFeatures.deleteCategory(category.id))">Excluir</button></span></div>
+        <div class="category-heading"><strong>{{ category.name }}</strong><span><button type="button" @click="editCategory(category)">Editar</button><button type="button" class="danger" @click="deleteCategory(category)">Excluir</button></span></div>
         <ul v-if="category.subcategories.length">
-          <li v-for="subcategory in category.subcategories" :key="subcategory.id">{{ subcategory.name }} <button type="button" @click="editSubcategory(category.id, subcategory.id, subcategory.name)">Editar</button> <button type="button" class="danger" @click="run(() => categoryFeatures.deleteSubcategory(category.id, subcategory.id))">Excluir</button></li>
+          <li v-for="subcategory in category.subcategories" :key="subcategory.id">{{ subcategory.name }} <button type="button" @click="editSubcategory(category.id, subcategory.id, subcategory.name)">Editar</button> <button type="button" class="danger" @click="deleteSubcategory(category.id, subcategory.id)">Excluir</button></li>
         </ul>
         <button type="button" class="soft-button" @click="toggleSubcategoryForm(category.id)">{{ expandedCategoryId === category.id ? 'Cancelar' : 'Adicionar subcategoria' }}</button>
         <form v-if="expandedCategoryId === category.id" class="inline-form" @submit.prevent="addSubcategory(category)">

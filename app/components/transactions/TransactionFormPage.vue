@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from '#imports'
 import { behaviors, necessities, paymentMethods, responsibles, transactionTypes, type Behavior, type Necessity, type Transaction, type TransactionInput } from '@/entities/transaction/model/transaction'
-import { categoryFeatures, transactionFeatures } from '@/app/composition/features'
+import { categoryFeatures, transactionFeatures } from '@/composition/features'
 
 const route = useRoute()
 const router = useRouter()
@@ -79,7 +79,7 @@ async function submit() {
       <fieldset><legend>Classificacao</legend><label>Comportamento<select v-model="form.behavior" required><option value="" disabled>Selecione</option><option v-for="behavior in behaviors" :key="behavior" :value="behavior">{{ behavior }}</option></select></label><label>Necessidade<select v-model="form.necessity" required><option value="" disabled>Selecione</option><option v-for="necessity in necessities" :key="necessity" :value="necessity">{{ necessity }}</option></select></label></fieldset>
       <fieldset><legend>Observacao</legend><label>Detalhes adicionais<textarea v-model="form.notes" rows="3" /></label></fieldset>
       <p v-if="error" class="error">{{ error }}</p>
-      <div class="form-actions"><RouterLink to="/">Cancelar</RouterLink><button class="primary" type="submit">Salvar</button></div>
+      <div class="form-actions"><NuxtLink to="/">Cancelar</NuxtLink><button class="primary" type="submit">Salvar</button></div>
     </form>
   </section>
 </template>

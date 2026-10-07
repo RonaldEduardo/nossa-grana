@@ -2,8 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Category } from '@/entities/category/model/category'
 import type { RecurrenceInput } from '@/entities/recurrence/model/recurrence'
 import type { Transaction, TransactionInput } from '@/entities/transaction/model/transaction'
-import { categoryFeatures, recurrenceFeatures } from '@/app/composition/features'
-import { goalFeatures, transactionFeatures } from '@/app/composition/features'
+import { categoryFeatures, goalFeatures, recurrenceFeatures, transactionFeatures } from '@/composition/features'
 
 const { deleteCategory, deleteSubcategory, getCategories } = categoryFeatures
 const { createRecurrence, ensureRecurrencesForMonth } = recurrenceFeatures
