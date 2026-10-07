@@ -33,13 +33,13 @@ A arquitetura deve permitir evolução gradual sem exigir que o MVP já possua a
 
 | Área | Tecnologia / decisão |
 |---|---|
-| Aplicação | SPA |
-| Framework | Vue 3 |
+| Aplicação | Nuxt com interface cliente (`ssr: false`) |
+| Framework | Nuxt 4 / Vue 3 |
 | Linguagem | TypeScript |
-| Build | Vite |
+| Build | Nuxt / Nitro |
 | API do Vue | Composition API |
 | Componentes Vue | `<script setup lang="ts">` |
-| Roteamento | Vue Router |
+| Roteamento | Pages router do Nuxt |
 | Arquitetura | FSD pragmática |
 | Modelagem | DDD pragmático |
 | Persistência do MVP | LocalStorage |
@@ -69,34 +69,22 @@ O objetivo é obter separação de responsabilidades sem criar burocracia arquit
 Estrutura atual:
 
 ```text
-src/
-├── app/
-│   ├── composition/
-│   ├── router/
-│   ├── App.vue
-│   ├── main.ts
-│   └── styles.css
-│
-├── pages/
-│   ├── home/
-│   ├── transactions/
-│   ├── categories/
-│   ├── recurrences/
-│   └── goals/
-│
-├── features/
-│   ├── transactions/
-│   ├── categories/
-│   ├── recurrences/
-│   └── goals/
-│
+app/
+├── composition/
 ├── entities/
-│   ├── transaction/
-│   ├── category/
-│   ├── recurrence/
-│   └── goal/
+├── features/
+├── pages/
+│   ├── index.vue
+│   ├── transactions/new.vue
+│   ├── transactions/[id]/edit.vue
+│   ├── categories.vue
+│   ├── recurrences.vue
+│   └── goals.vue
 │
-└── env.d.ts
+├── app.vue
+└── assets/styles.css
+
+server/api/health.get.ts
 ```
 
 `shared/` será criado somente quando houver código compartilhado real. Não serão criadas camadas FSD adicionais como `widgets` ou `processes`.
@@ -113,7 +101,7 @@ Inicialização e configuração global da aplicação.
 
 Exemplos:
 
-- Vue Router;
+- configuração global e composição no cliente;
 - providers;
 - configuração global;
 - montagem da aplicação.
