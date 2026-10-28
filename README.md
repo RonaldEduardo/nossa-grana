@@ -27,7 +27,7 @@ Abra as rotas `/`, `/transactions/new`, `/categories`, `/recurrences` e `/goals`
 
 ## Dados locais
 
-Os dados são locais ao navegador e à origem (protocolo, domínio e porta). Assim, mudar de porta/domínio usa outro LocalStorage, mas não altera os dados da origem anterior. As chaves preservadas são `finance.transactions`, `finance.categories`, `finance.recurrences`, `finance.goals` e `finance.goalMovements`. Exporte dados importantes no navegador antes de testes manuais.
+Os dados são locais ao navegador e à origem (protocolo, domínio e porta). Assim, mudar de porta/domínio usa outro LocalStorage, mas não altera os dados da origem anterior. As chaves preservadas são `finance.transactions`, `finance.categories`, `finance.recurrences`, `finance.recurrenceCancellations`, `finance.goals` e `finance.goalMovements`. Exporte dados importantes no navegador antes de testes manuais.
 
 ## Fluxo de contribuição
 
