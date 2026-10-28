@@ -37,20 +37,26 @@ export function createGoalFeatures(
     const goal = (await getGoals()).find((item) => item.id === goalId)
     if (!goal) throw new Error('Meta nao encontrada.')
     const movement: GoalMovement = { id: crypto.randomUUID(), goalId, type, amountCents, date, note: note.trim() }
-    await goalRepository.saveMovements([...(await getGoalMovements()), movement])
-    await createGoalMovementTransaction(movement.id, {
-      type: type === 'CONTRIBUTION' ? 'SAIDA' : 'ENTRADA',
-      description: `${type === 'CONTRIBUTION' ? 'Aporte' : 'Retirada'}: ${goal.name}`,
-      amountCents,
-      date,
-      responsible: 'CASA',
-      paymentMethod: 'PIX',
-      notes: movement.note,
-      categoryId: 'reserva',
-      subcategoryId: null,
-      behavior: 'VARIAVEL',
-      necessity: 'NECESSARIO',
-    })
+    const movements = await getGoalMovements()
+    await goalRepository.saveMovements([...movements, movement])
+    try {
+      await createGoalMovementTransaction(movement.id, {
+        type: type === 'CONTRIBUTION' ? 'SAIDA' : 'ENTRADA',
+        description: `${type === 'CONTRIBUTION' ? 'Aporte' : 'Retirada'}: ${goal.name}`,
+        amountCents,
+        date,
+        responsible: 'CASA',
+        paymentMethod: 'PIX',
+        notes: movement.note,
+        categoryId: 'reserva',
+        subcategoryId: null,
+        behavior: 'VARIAVEL',
+        necessity: 'NECESSARIO',
+      })
+    } catch (error) {
+      await goalRepository.saveMovements(movements)
+      throw error
+    }
   }
 
   async function deleteGoalMovement(id: string) {

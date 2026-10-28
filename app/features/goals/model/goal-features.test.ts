@@ -88,13 +88,12 @@ describe('goal features', () => {
     expect(fake.getMovements().map((movement) => movement.id)).toEqual(['movement-3'])
   })
 
-  it('preserva a falha parcial atual quando a criacao do espelho falha', async () => {
+  it('compensa o movimento quando a criacao do espelho falha', async () => {
     const goal: Goal = { id: 'goal-1', name: 'Meta', targetAmountCents: 10000, targetDate: '2026-12', active: true, createdAt: '' }
     const fake = createRepository([goal])
     const features = createGoalFeatures(fake.repository, async () => { throw new Error('falha no espelho') }, async () => {})
 
     await expect(features.createGoalMovement(goal.id, 'CONTRIBUTION', 1000, '2026-09-10', '')).rejects.toThrow('falha no espelho')
-    expect(fake.getMovements()).toHaveLength(1)
-    expect(fake.getMovements()[0]).toMatchObject({ goalId: goal.id, type: 'CONTRIBUTION' })
+    expect(fake.getMovements()).toEqual([])
   })
 })
