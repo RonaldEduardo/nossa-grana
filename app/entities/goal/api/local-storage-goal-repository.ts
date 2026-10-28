@@ -1,20 +1,13 @@
 import type { Goal, GoalMovement } from '@/entities/goal/model/goal'
 import type { GoalRepository } from '@/entities/goal/model/goal-repository'
+import { readLocalStorageCollection, writeLocalStorageCollection } from '@/entities/shared/local-storage'
 
 const goalsKey = 'finance.goals'
 const movementsKey = 'finance.goalMovements'
 
-function read<T>(key: string): T[] {
-  try {
-    return JSON.parse(localStorage.getItem(key) ?? '[]') as T[]
-  } catch {
-    return []
-  }
-}
-
 export const localStorageGoalRepository: GoalRepository = {
-  getGoals: async () => read<Goal>(goalsKey),
-  saveGoals: async (goals) => localStorage.setItem(goalsKey, JSON.stringify(goals)),
-  getMovements: async () => read<GoalMovement>(movementsKey),
-  saveMovements: async (movements) => localStorage.setItem(movementsKey, JSON.stringify(movements)),
+  getGoals: async () => readLocalStorageCollection<Goal>(goalsKey),
+  saveGoals: async (goals) => writeLocalStorageCollection(goalsKey, goals),
+  getMovements: async () => readLocalStorageCollection<GoalMovement>(movementsKey),
+  saveMovements: async (movements) => writeLocalStorageCollection(movementsKey, movements),
 }

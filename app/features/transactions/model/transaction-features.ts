@@ -6,32 +6,28 @@ import type { Transaction, TransactionInput } from '@/entities/transaction/model
 export function createTransactionFeatures(transactionRepository: TransactionRepository) {
   async function readTransactions(): Promise<Transaction[]> {
     const transactions = await transactionRepository.getAll()
-    try {
-      let changed = false
-      const migrated = transactions.map((transaction) => {
-        const legacy = transaction as Transaction & { amount?: number }
-        const competence = transaction.competence ?? calculateCompetence(transaction.date, transaction.paymentMethod)
-        const amountCents = Number.isInteger(transaction.amountCents)
-          ? transaction.amountCents
-          : Math.round((legacy.amount ?? 0) * 100)
-        const { amount: _amount, ...withoutLegacyAmount } = legacy
-        const adapted: Transaction = {
-          ...withoutLegacyAmount,
-          competence,
-          amountCents,
-          categoryId: transaction.categoryId ?? null,
-          subcategoryId: transaction.subcategoryId ?? null,
-          behavior: transaction.behavior ?? null,
-          necessity: transaction.necessity ?? null,
-        }
-        if (!transaction.competence || !Number.isInteger(transaction.amountCents) || !transaction.categoryId || !transaction.behavior || !transaction.necessity) changed = true
-        return adapted
-      })
-      if (changed) await transactionRepository.saveAll(migrated)
-      return migrated
-    } catch {
-      return []
-    }
+    let changed = false
+    const migrated = transactions.map((transaction) => {
+      const legacy = transaction as Transaction & { amount?: number }
+      const competence = transaction.competence ?? calculateCompetence(transaction.date, transaction.paymentMethod)
+      const amountCents = Number.isInteger(transaction.amountCents)
+        ? transaction.amountCents
+        : Math.round((legacy.amount ?? 0) * 100)
+      const { amount: _amount, ...withoutLegacyAmount } = legacy
+      const adapted: Transaction = {
+        ...withoutLegacyAmount,
+        competence,
+        amountCents,
+        categoryId: transaction.categoryId ?? null,
+        subcategoryId: transaction.subcategoryId ?? null,
+        behavior: transaction.behavior ?? null,
+        necessity: transaction.necessity ?? null,
+      }
+      if (!transaction.competence || !Number.isInteger(transaction.amountCents) || !transaction.categoryId || !transaction.behavior || !transaction.necessity) changed = true
+      return adapted
+    })
+    if (changed) await transactionRepository.saveAll(migrated)
+    return migrated
   }
 
   async function saveTransactions(transactions: Transaction[]) {

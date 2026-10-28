@@ -1,17 +1,21 @@
-import type { Recurrence } from '@/entities/recurrence/model/recurrence'
+import type { Recurrence, RecurrenceCancellation } from '@/entities/recurrence/model/recurrence'
 import type { RecurrenceRepository } from '@/entities/recurrence/model/recurrence-repository'
+import { readLocalStorageCollection, writeLocalStorageCollection } from '@/entities/shared/local-storage'
 
 const storageKey = 'finance.recurrences'
+const cancellationsKey = 'finance.recurrenceCancellations'
 
 export const localStorageRecurrenceRepository: RecurrenceRepository = {
   async getAll() {
-    try {
-      return JSON.parse(localStorage.getItem(storageKey) ?? '[]') as Recurrence[]
-    } catch {
-      return []
-    }
+    return readLocalStorageCollection<Recurrence>(storageKey)
   },
   async saveAll(recurrences) {
-    localStorage.setItem(storageKey, JSON.stringify(recurrences))
+    writeLocalStorageCollection(storageKey, recurrences)
+  },
+  async getCancellations() {
+    return readLocalStorageCollection<RecurrenceCancellation>(cancellationsKey)
+  },
+  async saveCancellations(cancellations) {
+    writeLocalStorageCollection(cancellationsKey, cancellations)
   },
 }

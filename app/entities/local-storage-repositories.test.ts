@@ -78,6 +78,9 @@ describe('adapters LocalStorage async', () => {
     expect(localStorageRecurrenceRepository.getAll()).toBeInstanceOf(Promise)
     expect(await localStorageRecurrenceRepository.getAll()).toEqual([recurrence])
 
+    await localStorageRecurrenceRepository.saveCancellations([{ recurrenceId: recurrence.id, sourceCompetence: '2026-09' }])
+    expect(await localStorageRecurrenceRepository.getCancellations()).toEqual([{ recurrenceId: recurrence.id, sourceCompetence: '2026-09' }])
+
     await localStorageRecurrenceRepository.saveAll([recurrence])
     expect(JSON.parse(localStorage.getItem('finance.recurrences') ?? '[]')).toEqual([recurrence])
   })
@@ -96,17 +99,19 @@ describe('adapters LocalStorage async', () => {
     expect(JSON.parse(localStorage.getItem('finance.goalMovements') ?? '[]')).toEqual([movement])
   })
 
-  it('mantem parse defensivo para as cinco chaves', async () => {
+  it('propaga JSON invalido para preservar os dados das cinco chaves', async () => {
     localStorage.setItem('finance.transactions', '{')
     localStorage.setItem('finance.categories', '{')
     localStorage.setItem('finance.recurrences', '{')
+    localStorage.setItem('finance.recurrenceCancellations', '{')
     localStorage.setItem('finance.goals', '{')
     localStorage.setItem('finance.goalMovements', '{')
 
-    expect(await localStorageTransactionRepository.getAll()).toEqual([])
-    expect(await localStorageCategoryRepository.getAll()).toEqual([])
-    expect(await localStorageRecurrenceRepository.getAll()).toEqual([])
-    expect(await localStorageGoalRepository.getGoals()).toEqual([])
-    expect(await localStorageGoalRepository.getMovements()).toEqual([])
+    await expect(localStorageTransactionRepository.getAll()).rejects.toThrow('finance.transactions')
+    await expect(localStorageCategoryRepository.getAll()).rejects.toThrow('finance.categories')
+    await expect(localStorageRecurrenceRepository.getAll()).rejects.toThrow('finance.recurrences')
+    await expect(localStorageRecurrenceRepository.getCancellations()).rejects.toThrow('finance.recurrenceCancellations')
+    await expect(localStorageGoalRepository.getGoals()).rejects.toThrow('finance.goals')
+    await expect(localStorageGoalRepository.getMovements()).rejects.toThrow('finance.goalMovements')
   })
 })
