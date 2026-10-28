@@ -8,6 +8,7 @@
     "typecheck": "nuxt typecheck",
     "lint": "nuxt prepare && eslint .",
     "test": "vitest run",
+    "harness": "vitest run app/harness",
     "build": "nuxt build",
     "preview": "nuxt preview",
     "check": "npm run typecheck && npm run lint && npm test && npm run build"
