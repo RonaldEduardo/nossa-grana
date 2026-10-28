@@ -77,6 +77,7 @@ async function remove(id: string) {
     ? window.confirm('Excluir todas as parcelas desta compra? Clique em Cancelar para excluir somente esta parcela.')
     : false
   if (!transaction || (!transaction.installmentGroupId && !window.confirm('Excluir este lancamento?'))) return
+  if (transaction.recurrenceId) await recurrenceFeatures.cancelRecurrenceOccurrence(transaction)
   await transactionFeatures.deleteTransaction(id, deleteGroup)
   transactions.value = await transactionFeatures.getTransactions()
 }

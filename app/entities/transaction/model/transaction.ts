@@ -33,6 +33,7 @@ export interface Transaction {
   installmentCount?: number
   originalTotalAmountCents?: number
   recurrenceId?: string
+  recurrenceSourceCompetence?: string
   needsValue?: boolean
   goalMovementId?: string
   createdAt: string

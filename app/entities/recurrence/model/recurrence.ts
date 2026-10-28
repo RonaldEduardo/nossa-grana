@@ -20,4 +20,9 @@ export interface Recurrence {
   startMonth: string
 }
 
+export interface RecurrenceCancellation {
+  recurrenceId: string
+  sourceCompetence: string
+}
+
 export type RecurrenceInput = Omit<Recurrence, 'id'>

@@ -1,16 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRecurrenceFeatures } from '@/features/recurrences/model/recurrence-features'
 import type { RecurrenceRepository } from '@/entities/recurrence/model/recurrence-repository'
-import type { Recurrence, RecurrenceInput } from '@/entities/recurrence/model/recurrence'
+import type { Recurrence, RecurrenceCancellation, RecurrenceInput } from '@/entities/recurrence/model/recurrence'
 import type { Transaction } from '@/entities/transaction/model/transaction'
 
 function createRepository(initialRecurrences: Recurrence[] = []) {
   let recurrences = initialRecurrences
+  let cancellations: RecurrenceCancellation[] = []
   const repository: RecurrenceRepository = {
     getAll: async () => recurrences,
     saveAll: async (nextRecurrences) => { recurrences = nextRecurrences },
+    getCancellations: async () => cancellations,
+    saveCancellations: async (nextCancellations) => { cancellations = nextCancellations },
   }
-  return { repository, getStored: () => recurrences }
+  return { repository, getStored: () => recurrences, getCancellations: () => cancellations }
 }
 
 const input: RecurrenceInput = {
@@ -64,5 +67,41 @@ describe('recurrence features', () => {
     expect(first.find((transaction) => transaction.recurrenceId === 'variable')).toMatchObject({ amountCents: 0, needsValue: true })
     expect(second).toEqual([])
     expect(transactions).toHaveLength(2)
+  })
+
+  it('cancela somente a competencia de origem e preserva o cancelamento apos reiniciar', async () => {
+    const credit: Recurrence = { ...input, id: 'credit', paymentMethod: 'CREDITO' }
+    const fake = createRepository([credit])
+    let transactions: Transaction[] = []
+    const features = createRecurrenceFeatures(fake.repository, async () => transactions, async (next) => { transactions = next })
+
+    const [december] = await features.ensureRecurrencesForMonth('2026-12')
+    expect(december).toMatchObject({ competence: '2027-01', recurrenceSourceCompetence: '2026-12' })
+    await features.cancelRecurrenceOccurrence(december)
+    await features.cancelRecurrenceOccurrence(december)
+    transactions = []
+
+    const restarted = createRecurrenceFeatures(fake.repository, async () => transactions, async (next) => { transactions = next })
+    expect(await restarted.ensureRecurrencesForMonth('2026-12')).toEqual([])
+    expect(fake.getCancellations()).toEqual([{ recurrenceId: 'credit', sourceCompetence: '2026-12' }])
+    expect(await restarted.ensureRecurrencesForMonth('2027-01')).toMatchObject([
+      { competence: '2027-02', recurrenceSourceCompetence: '2027-01' },
+    ])
+  })
+
+  it('mantem registro antigo sem metadado como gerado na competencia persistida', async () => {
+    const credit: Recurrence = { ...input, id: 'credit', paymentMethod: 'CREDITO' }
+    const legacy: Transaction = {
+      id: 'legacy', type: 'SAIDA', description: credit.description, amountCents: credit.defaultAmountCents,
+      date: '2026-12-10', competence: '2026-12', responsible: 'CASA', paymentMethod: 'CREDITO',
+      status: 'PENDENTE', paidAt: null, notes: '', categoryId: 'assinaturas', subcategoryId: null,
+      behavior: 'FIXO', necessity: 'NECESSARIO', recurrenceId: 'credit', createdAt: '', updatedAt: '',
+    }
+    const fake = createRepository([credit])
+    let transactions = [legacy]
+    const features = createRecurrenceFeatures(fake.repository, async () => transactions, async (next) => { transactions = next })
+
+    expect(await features.ensureRecurrencesForMonth('2026-12')).toEqual([])
+    expect(transactions).toEqual([legacy])
   })
 })
